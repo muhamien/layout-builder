@@ -1,15 +1,23 @@
 import { useState } from 'react'
 import { Toaster, toast } from 'sonner'
-import { KeyIcon, MoonIcon, SunIcon, DownloadIcon, SquareDashedIcon } from 'lucide-react'
+import {
+  KeyIcon,
+  MoonIcon,
+  SunIcon,
+  DownloadIcon,
+  SquareDashedIcon,
+  BookmarkIcon,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Separator } from '@/components/ui/separator'
-import { TemplatePanel } from '@/components/TemplatePanel'
+import { Sidebar } from '@/components/Sidebar'
 import { WireframeCanvas } from '@/components/WireframeCanvas'
 import { ChatPanel } from '@/components/ChatPanel'
 import { ProviderConfig } from '@/components/ProviderConfig'
 import { ElementInspector } from '@/components/ElementInspector'
+import { useLibrary } from '@/hooks/useLibrary'
 import type { AppTemplate, AIConfig, WireframeFrame, WireframeElement } from '@/types'
 import { emptyFrame } from '@/lib/templates'
 
@@ -18,8 +26,12 @@ export default function App() {
   const [configOpen, setConfigOpen] = useState(false)
   const [aiConfig, setAiConfig] = useState<AIConfig | null>(null)
   const [currentFrame, setCurrentFrame] = useState<WireframeFrame | null>(null)
+  const [currentSource, setCurrentSource] = useState<'blank' | 'template' | 'ai'>('blank')
+  const [currentTemplateId, setCurrentTemplateId] = useState<string | null>(null)
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
   const [selectedElement, setSelectedElement] = useState<WireframeElement | null>(null)
+
+  const { items: libraryItems, save, rename, remove, duplicate } = useLibrary()
 
   const handleToggleDark = () => {
     setDarkMode((d) => {
@@ -31,13 +43,18 @@ export default function App() {
 
   const handleSelectTemplate = (tpl: AppTemplate) => {
     setCurrentFrame(tpl.wireframe)
+    setCurrentSource('template')
+    setCurrentTemplateId(tpl.id)
     setSelectedTemplateId(tpl.id)
     setSelectedElement(null)
     toast.success(`Loaded "${tpl.name}"`)
   }
 
   const handleNewCanvas = () => {
-    setCurrentFrame(emptyFrame())
+    const frame = emptyFrame()
+    setCurrentFrame(frame)
+    setCurrentSource('blank')
+    setCurrentTemplateId(null)
     setSelectedTemplateId(null)
     setSelectedElement(null)
     toast('Blank canvas created')
@@ -45,10 +62,29 @@ export default function App() {
 
   const handleWireframeGenerated = (frame: WireframeFrame) => {
     setCurrentFrame(frame)
+    setCurrentSource('ai')
+    setCurrentTemplateId(null)
     setSelectedTemplateId(null)
     setSelectedElement(null)
     toast.success('Wireframe generated!', {
       description: `${frame.elements.length} elements · ${frame.width}×${frame.height}px`,
+    })
+  }
+
+  const handleOpenLibraryItem = (item: typeof libraryItems[0]) => {
+    setCurrentFrame(item.frame)
+    setCurrentSource(item.source)
+    setCurrentTemplateId(item.templateId ?? null)
+    setSelectedTemplateId(item.templateId ?? null)
+    setSelectedElement(null)
+    toast(`Opened "${item.name}"`)
+  }
+
+  const handleSaveToLibrary = () => {
+    if (!currentFrame) return
+    save(currentFrame, currentSource, currentTemplateId ?? undefined)
+    toast.success('Saved to Library', {
+      description: currentFrame.name,
     })
   }
 
@@ -72,6 +108,13 @@ export default function App() {
     toast.success('Wireframe exported')
   }
 
+  const handleDuplicate = (id: string) => {
+    const copy = duplicate(id)
+    if (copy) {
+      toast.success(`Duplicated as "${copy.name}"`)
+    }
+  }
+
   return (
     <TooltipProvider delayDuration={400}>
       <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden">
@@ -93,14 +136,31 @@ export default function App() {
 
           <div className="ml-auto flex items-center gap-1">
             {currentFrame && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="size-8" onClick={handleExport}>
-                    <DownloadIcon className="size-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Export JSON</TooltipContent>
-              </Tooltip>
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1.5 h-8 text-xs"
+                      onClick={handleSaveToLibrary}
+                    >
+                      <BookmarkIcon className="size-3.5" />
+                      Save to Library
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Save current wireframe to library</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="size-8" onClick={handleExport}>
+                      <DownloadIcon className="size-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Export JSON</TooltipContent>
+                </Tooltip>
+              </>
             )}
 
             <Tooltip>
@@ -126,10 +186,16 @@ export default function App() {
 
         {/* Body */}
         <div className="flex flex-1 overflow-hidden">
-          <TemplatePanel
-            onSelect={handleSelectTemplate}
+          <Sidebar
+            onSelectTemplate={handleSelectTemplate}
             onNew={handleNewCanvas}
-            selectedId={selectedTemplateId}
+            selectedTemplateId={selectedTemplateId}
+            libraryItems={libraryItems}
+            onOpenLibraryItem={handleOpenLibraryItem}
+            onRenameLibraryItem={rename}
+            onRemoveLibraryItem={remove}
+            onDuplicateLibraryItem={handleDuplicate}
+            activeFrameId={currentFrame?.id}
           />
 
           <main className="flex flex-1 overflow-hidden">
@@ -138,14 +204,11 @@ export default function App() {
               onSelectElement={setSelectedElement}
             />
 
-            {/* Right panel: inspector + chat stacked */}
+            {/* Right panel */}
             <div className="w-80 flex flex-col border-l shrink-0 overflow-hidden">
-              {/* Inspector */}
               <div className="border-b shrink-0">
                 <ElementInspector element={selectedElement} />
               </div>
-
-              {/* Chat fills remaining space */}
               <ChatPanel
                 config={aiConfig}
                 onWireframeGenerated={handleWireframeGenerated}

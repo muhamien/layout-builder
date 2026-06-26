@@ -123,7 +123,9 @@ export function WireframeCanvas({ frame, onSelectElement }: WireframeCanvasProps
     return (
       <div className="flex-1 flex items-center justify-center bg-muted/30">
         <div className="text-center space-y-3">
-          <div className="text-5xl opacity-20">⬛</div>
+          <div className="flex justify-center opacity-20">
+            <SquareIcon width={48} height={48} strokeWidth={1} />
+          </div>
           <p className="text-muted-foreground text-sm">
             Select a template or describe your layout in the chat
           </p>
