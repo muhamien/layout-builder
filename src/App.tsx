@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Toaster, toast } from 'sonner'
 import {
   KeyIcon,
@@ -7,6 +7,9 @@ import {
   DownloadIcon,
   SquareDashedIcon,
   BookmarkIcon,
+  CodeIcon,
+  FileTextIcon,
+  ChevronDownIcon,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -18,8 +21,87 @@ import { ChatPanel } from '@/components/ChatPanel'
 import { ProviderConfig } from '@/components/ProviderConfig'
 import { ElementInspector } from '@/components/ElementInspector'
 import { useLibrary } from '@/hooks/useLibrary'
+import { exportHTML, exportMarkdown, downloadFile, toSlug } from '@/lib/export'
 import type { AppTemplate, AIConfig, WireframeFrame, WireframeElement } from '@/types'
 import { emptyFrame } from '@/lib/templates'
+
+function ExportMenu({ frame }: { frame: WireframeFrame }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  const handleHTML = () => {
+    downloadFile(exportHTML(frame), `${toSlug(frame.name)}.wireframe.html`, 'text/html')
+    toast.success('Exported HTML wireframe', { description: `${toSlug(frame.name)}.wireframe.html` })
+    setOpen(false)
+  }
+
+  const handleMarkdown = () => {
+    downloadFile(exportMarkdown(frame), `${toSlug(frame.name)}.prompt.md`, 'text/markdown')
+    toast.success('Exported coding prompt', { description: `${toSlug(frame.name)}.prompt.md` })
+    setOpen(false)
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1 h-8 px-2.5"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-haspopup="menu"
+          >
+            <DownloadIcon className="size-3.5" />
+            Export
+            <ChevronDownIcon className="size-3 opacity-60" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Export wireframe</TooltipContent>
+      </Tooltip>
+
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-10 z-50 w-56 bg-popover border rounded-lg shadow-md p-1 text-sm animate-in fade-in-0 zoom-in-95"
+        >
+          <button
+            role="menuitem"
+            onClick={handleHTML}
+            className="w-full flex items-start gap-3 px-3 py-2.5 rounded-md hover:bg-accent text-left transition-colors"
+          >
+            <CodeIcon className="size-4 text-primary shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-sm">HTML Wireframe</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Self-contained visual wireframe page</p>
+            </div>
+          </button>
+          <button
+            role="menuitem"
+            onClick={handleMarkdown}
+            className="w-full flex items-start gap-3 px-3 py-2.5 rounded-md hover:bg-accent text-left transition-colors"
+          >
+            <FileTextIcon className="size-4 text-primary shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-sm">Coding Prompt</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Markdown spec to delegate to a coding agent</p>
+            </div>
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false)
@@ -83,9 +165,7 @@ export default function App() {
   const handleSaveToLibrary = () => {
     if (!currentFrame) return
     save(currentFrame, currentSource, currentTemplateId ?? undefined)
-    toast.success('Saved to Library', {
-      description: currentFrame.name,
-    })
+    toast.success('Saved to Library', { description: currentFrame.name })
   }
 
   const handleSaveConfig = (config: AIConfig) => {
@@ -95,24 +175,9 @@ export default function App() {
     })
   }
 
-  const handleExport = () => {
-    if (!currentFrame) return
-    const json = JSON.stringify(currentFrame, null, 2)
-    const blob = new Blob([json], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${currentFrame.name.toLowerCase().replace(/\s+/g, '-')}.wireframe.json`
-    a.click()
-    URL.revokeObjectURL(url)
-    toast.success('Wireframe exported')
-  }
-
   const handleDuplicate = (id: string) => {
     const copy = duplicate(id)
-    if (copy) {
-      toast.success(`Duplicated as "${copy.name}"`)
-    }
+    if (copy) toast.success(`Duplicated as "${copy.name}"`)
   }
 
   return (
@@ -152,14 +217,7 @@ export default function App() {
                   <TooltipContent>Save current wireframe to library</TooltipContent>
                 </Tooltip>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="size-8" onClick={handleExport}>
-                      <DownloadIcon className="size-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Export JSON</TooltipContent>
-                </Tooltip>
+                <ExportMenu frame={currentFrame} />
               </>
             )}
 
@@ -203,8 +261,6 @@ export default function App() {
               frame={currentFrame}
               onSelectElement={setSelectedElement}
             />
-
-            {/* Right panel */}
             <div className="w-80 flex flex-col border-l shrink-0 overflow-hidden">
               <div className="border-b shrink-0">
                 <ElementInspector element={selectedElement} />
