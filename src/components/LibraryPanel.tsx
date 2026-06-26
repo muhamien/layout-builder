@@ -12,7 +12,6 @@ import {
   SearchIcon,
   PackageOpenIcon,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
@@ -53,13 +52,12 @@ function formatDate(iso: string) {
 }
 
 interface ItemMenuProps {
-  item: LibraryItem
   onRename: () => void
   onDuplicate: () => void
   onRemove: () => void
 }
 
-function ItemMenu({ item, onRename, onDuplicate, onRemove }: ItemMenuProps) {
+function ItemMenu({ onRename, onDuplicate, onRemove }: ItemMenuProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -222,7 +220,6 @@ export function LibraryPanel({
                       <span className="text-xs font-medium truncate flex-1">{item.name}</span>
                     )}
                     <ItemMenu
-                      item={item}
                       onRename={() => startRename(item)}
                       onDuplicate={() => onDuplicate(item.id)}
                       onRemove={() => onRemove(item.id)}
