@@ -1,0 +1,145 @@
+import type { AppTemplate, WireframeFrame } from '@/types'
+// icon field now holds a lucide icon name (rendered in TemplatePanel)
+
+export const defaultTemplates: AppTemplate[] = [
+  {
+    id: 'dashboard',
+    name: 'Admin Dashboard',
+    description: 'Sidebar nav, stat cards, data table',
+    icon: 'LayoutDashboard',
+    category: 'dashboard',
+    wireframe: {
+      id: 'dashboard-frame',
+      name: 'Admin Dashboard',
+      width: 1280,
+      height: 800,
+      elements: [
+        { id: 'sidebar', type: 'sidebar', label: 'Sidebar Nav', x: 0, y: 0, width: 240, height: 800 },
+        { id: 'header', type: 'header', label: 'Top Header', x: 240, y: 0, width: 1040, height: 64 },
+        { id: 'stat1', type: 'card', label: 'Stat Card', x: 264, y: 88, width: 220, height: 96 },
+        { id: 'stat2', type: 'card', label: 'Stat Card', x: 504, y: 88, width: 220, height: 96 },
+        { id: 'stat3', type: 'card', label: 'Stat Card', x: 744, y: 88, width: 220, height: 96 },
+        { id: 'stat4', type: 'card', label: 'Stat Card', x: 984, y: 88, width: 220, height: 96 },
+        { id: 'chart', type: 'chart', label: 'Analytics Chart', x: 264, y: 208, width: 580, height: 280 },
+        { id: 'sidebar2', type: 'list', label: 'Recent Activity', x: 864, y: 208, width: 340, height: 280 },
+        { id: 'table', type: 'table', label: 'Data Table', x: 264, y: 512, width: 940, height: 240 },
+      ],
+    },
+  },
+  {
+    id: 'landing',
+    name: 'Landing Page',
+    description: 'Hero, features, CTA sections',
+    icon: 'MonitorPlay',
+    category: 'landing',
+    wireframe: {
+      id: 'landing-frame',
+      name: 'Landing Page',
+      width: 1280,
+      height: 900,
+      elements: [
+        { id: 'nav', type: 'nav', label: 'Navigation Bar', x: 0, y: 0, width: 1280, height: 64 },
+        { id: 'hero', type: 'hero', label: 'Hero Section', x: 0, y: 64, width: 1280, height: 360 },
+        { id: 'feat1', type: 'card', label: 'Feature', x: 80, y: 480, width: 340, height: 160 },
+        { id: 'feat2', type: 'card', label: 'Feature', x: 460, y: 480, width: 340, height: 160 },
+        { id: 'feat3', type: 'card', label: 'Feature', x: 840, y: 480, width: 340, height: 160 },
+        { id: 'cta', type: 'hero', label: 'CTA Section', x: 0, y: 700, width: 1280, height: 160 },
+      ],
+    },
+  },
+  {
+    id: 'saas',
+    name: 'SaaS App',
+    description: 'App shell with top nav and content',
+    icon: 'AppWindow',
+    category: 'saas',
+    wireframe: {
+      id: 'saas-frame',
+      name: 'SaaS App',
+      width: 1280,
+      height: 800,
+      elements: [
+        { id: 'topnav', type: 'nav', label: 'Top Navigation', x: 0, y: 0, width: 1280, height: 56 },
+        { id: 'sidebar', type: 'sidebar', label: 'Sidebar', x: 0, y: 56, width: 200, height: 744 },
+        { id: 'toolbar', type: 'header', label: 'Toolbar', x: 200, y: 56, width: 1080, height: 48 },
+        { id: 'main', type: 'main', label: 'Main Content', x: 200, y: 104, width: 1080, height: 696 },
+      ],
+    },
+  },
+  {
+    id: 'mobile',
+    name: 'Mobile App',
+    description: 'Mobile-first layout with bottom nav',
+    icon: 'Smartphone',
+    category: 'mobile',
+    wireframe: {
+      id: 'mobile-frame',
+      name: 'Mobile App',
+      width: 390,
+      height: 844,
+      elements: [
+        { id: 'statusbar', type: 'header', label: 'Status Bar', x: 0, y: 0, width: 390, height: 44 },
+        { id: 'appbar', type: 'nav', label: 'App Bar', x: 0, y: 44, width: 390, height: 56 },
+        { id: 'content', type: 'main', label: 'Scrollable Content', x: 0, y: 100, width: 390, height: 688 },
+        { id: 'bottomnav', type: 'nav', label: 'Bottom Nav', x: 0, y: 788, width: 390, height: 56 },
+      ],
+    },
+  },
+  {
+    id: 'ecommerce',
+    name: 'E-Commerce',
+    description: 'Product grid with filters sidebar',
+    icon: 'ShoppingBag',
+    category: 'ecommerce',
+    wireframe: {
+      id: 'ecommerce-frame',
+      name: 'E-Commerce',
+      width: 1280,
+      height: 900,
+      elements: [
+        { id: 'nav', type: 'nav', label: 'Store Nav', x: 0, y: 0, width: 1280, height: 64 },
+        { id: 'filters', type: 'sidebar', label: 'Filters', x: 0, y: 64, width: 260, height: 836 },
+        { id: 'toolbar', type: 'header', label: 'Sort & Filter Bar', x: 260, y: 64, width: 1020, height: 52 },
+        { id: 'p1', type: 'card', label: 'Product', x: 280, y: 136, width: 220, height: 300 },
+        { id: 'p2', type: 'card', label: 'Product', x: 520, y: 136, width: 220, height: 300 },
+        { id: 'p3', type: 'card', label: 'Product', x: 760, y: 136, width: 220, height: 300 },
+        { id: 'p4', type: 'card', label: 'Product', x: 1000, y: 136, width: 220, height: 300 },
+        { id: 'p5', type: 'card', label: 'Product', x: 280, y: 456, width: 220, height: 300 },
+        { id: 'p6', type: 'card', label: 'Product', x: 520, y: 456, width: 220, height: 300 },
+        { id: 'p7', type: 'card', label: 'Product', x: 760, y: 456, width: 220, height: 300 },
+        { id: 'p8', type: 'card', label: 'Product', x: 1000, y: 456, width: 220, height: 300 },
+      ],
+    },
+  },
+  {
+    id: 'blog',
+    name: 'Blog / CMS',
+    description: 'Article list with reading pane',
+    icon: 'BookOpen',
+    category: 'blog',
+    wireframe: {
+      id: 'blog-frame',
+      name: 'Blog / CMS',
+      width: 1280,
+      height: 800,
+      elements: [
+        { id: 'nav', type: 'nav', label: 'Blog Nav', x: 0, y: 0, width: 1280, height: 64 },
+        { id: 'hero', type: 'hero', label: 'Featured Post', x: 0, y: 64, width: 1280, height: 300 },
+        { id: 'art1', type: 'card', label: 'Article Card', x: 80, y: 396, width: 340, height: 200 },
+        { id: 'art2', type: 'card', label: 'Article Card', x: 460, y: 396, width: 340, height: 200 },
+        { id: 'art3', type: 'card', label: 'Article Card', x: 840, y: 396, width: 340, height: 200 },
+        { id: 'footer', type: 'footer', label: 'Footer', x: 0, y: 640, width: 1280, height: 160 },
+      ],
+    },
+  },
+]
+
+export function emptyFrame(): WireframeFrame {
+  return {
+    id: 'empty-' + Date.now(),
+    name: 'New Wireframe',
+    width: 1280,
+    height: 800,
+    elements: [],
+  }
+}
